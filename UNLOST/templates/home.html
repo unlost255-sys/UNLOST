@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="hero">
+        <h1>
+            Find What Matters.<br>
+            <span style="color: var(--color-primary);">Recover the Lost.</span>
+        </h1>
+        <p>
+            The Smart Lost and Found System for campus recovery. Report items instantly and connect securely.
+        </p>
+
+        <div class="hero-btns">
+            <a href="{{ url_for('report') }}" class="btn btn-primary">
+                <i class="fa-solid fa-bullhorn"></i> Report Lost Item
+            </a>
+            <a href="{{ url_for('items') }}" class="btn btn-outline">
+                <i class="fa-solid fa-magnifying-glass"></i> Start Searching
+            </a>
+        </div>
+    </div>
+
+    {% if latest_items %}
+    <div style="margin-top: 3rem; margin-bottom: 3rem;">
+        <h2 style="margin-bottom: 1.5rem; text-align: center; color: var(--color-text-main);">New Updates</h2>
+        <div class="card-grid new-updates-grid">
+            {% for item in latest_items %}
+            <div class="card">
+                {% if item.image_file %}
+                <img src="{{ url_for('static', filename='uploads/' + item.image_file) }}" alt="{{ item.title }}"
+                    class="card-img" style="height: 200px; width: 100%; object-fit: cover;">
+                {% else %}
+                <div class="card-img"
+                    style="display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); font-size: 3rem; color: var(--color-text-muted); height: 200px;">
+                    <i class="fa-solid fa-image"></i>
+                </div>
+                {% endif %}
+                <div class="card-body" style="padding: 1.5rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                        <span class="badge {{ item.status.lower() }}">{{ item.status }}</span>
+                        <span
+                            style="font-size: 0.8rem; color: var(--color-text-muted); display: flex; align-items: center; gap: 0.3rem;">
+                            <i class="fa-regular fa-calendar"></i> {{ item.date.strftime('%Y-%m-%d') }}
+                        </span>
+                    </div>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--color-text-main);">{{ item.title
+                        }}
+                    </h3>
+                    <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1rem; flex-grow: 1;">
+                        {{ item.category }}
+                    </p>
+                    <a href="{{ url_for('items', q=item.title) }}" class="btn btn-outline"
+                        style="width: 100%; text-align: center; padding: 0.6rem;">View Details</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            gsap.registerPlugin(ScrollTrigger);
+
+            gsap.from(".new-updates-grid .card", {
+                duration: 0.8,
+                y: 50,
+                opacity: 0,
+                stagger: 0.2,
+                ease: "power3.out",
+                scrollTrigger: {
+                    trigger: ".new-updates-grid",
+                    start: "top 80%",
+                    toggleActions: "play none none reverse"
+                }
+            });
+        });
+    </script>
+
+    <div class="card-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 4rem;">
+        <div class="card">
+            <div class="feature-icon">
+                <i class="fa-solid fa-search"></i>
+            </div>
+            <h3 style="margin-bottom: 0.5rem; font-size: 1.5rem;">Smart Search</h3>
+            <p style="color: var(--color-text-muted);">Instantly filter through thousands of items with our real-time
+                search engine.</p>
+        </div>
+        <div class="card">
+            <div class="feature-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 style="margin-bottom: 0.5rem; font-size: 1.5rem;">Secure Connect</h3>
+            <p style="color: var(--color-text-muted);">Your contact details are protected. Connect only when you verify
+                ownership.</p>
+        </div>
+        <div class="card">
+            <div class="feature-icon">
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+            <h3 style="margin-bottom: 0.5rem; font-size: 1.5rem;">Instant Alerts</h3>
+            <p style="color: var(--color-text-muted);">Post an item in seconds using our streamlined reporting
+                interface.
+            </p>
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNLOST | Smart Lost and Found System</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Add some icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <nav>
+        <a href="{{ url_for('home') }}" class="brand">
+            <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="UNLOST Logo">
+        </a>
+        <div class="hamburger" onclick="toggleMenu()">
+            <i class="fa-solid fa-bars" style="color: white; font-size: 1.5rem;"></i>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="{{ url_for('home') }}" class="{{ 'active' if request.endpoint == 'home' else '' }}"><i
+                    class="fa-solid fa-house"></i> Home</a>
+            <a href="{{ url_for('report') }}" class="{{ 'active' if request.endpoint == 'report' else '' }}"><i
+                    class="fa-solid fa-plus-circle"></i> Report</a>
+            <a href="{{ url_for('items') }}" class="{{ 'active' if request.endpoint == 'items' else '' }}"><i
+                    class="fa-solid fa-search"></i> Browse</a>
+            <a href="{{ url_for('contact') }}" class="{{ 'active' if request.endpoint == 'contact' else '' }}"><i
+                    class="fa-solid fa-envelope"></i> Contact</a>
+
+            {% if current_user.is_authenticated %}
+            {% if current_user.is_admin %}
+            <a href="{{ url_for('admin') }}" class="{{ 'active' if request.endpoint == 'admin' else '' }}"><i
+                    class="fa-solid fa-gauge-high"></i> Admin</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="{{ 'active' if request.endpoint == 'login' else '' }}"><i
+                    class="fa-solid fa-right-to-bracket"></i> Login</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="main-content">
+        {% if request.endpoint != 'login' %}
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="margin-bottom: 1.5rem;">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        <p>&copy; 2026 UNLOST Campus Initiative. <br><span style="color: var(--text-muted); font-size: 0.8rem;">Designed
+                for the Future.</span></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX;
+            const y = e.clientY;
+            document.body.style.setProperty('--mouse-x', x + 'px');
+            document.body.style.setProperty('--mouse-y', y + 'px');
+        });
+
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        }
+    </script>
+</body>
+
+</html>

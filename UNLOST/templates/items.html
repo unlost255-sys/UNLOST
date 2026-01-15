@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <h1 class="heading-title" style="margin: 0; font-size: 2.5rem;">Browse Items</h1>
+        <a href="{{ url_for('report') }}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Report New Item
+        </a>
+    </div>
+
+    <div class="card" style="margin-bottom: 2rem;">
+        <div class="card-body">
+            <form action="{{ url_for('items') }}" method="GET"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; align-items: end;">
+                <div class="form-group" style="margin: 0;">
+                    <label for="q">Search</label>
+                    <input type="text" id="q" name="q" placeholder="Keywords..."
+                        value="{{ request.args.get('q', '') }}">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label for="category">Category</label>
+                    <select id="category" name="category">
+                        <option value="">All Categories</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Documents">Documents</option>
+                        <option value="Clothing">Clothing</option>
+                        <option value="Accessories">Accessories</option>
+                        <option value="Books">Books/Stationery</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label for="status">Status</label>
+                    <select id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="Lost">Lost</option>
+                        <option value="Found">Found</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Filter</button>
+                    <a href="{{ url_for('items') }}" class="btn btn-outline" style="padding: 0.8rem 1rem;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% macro render_item_card(item) %}
+    <div class="card">
+        {% if item.image_file %}
+        <img src="{{ url_for('static', filename='uploads/' + item.image_file) }}" alt="{{ item.title }}"
+            class="card-img">
+        {% else %}
+        <div class="card-img"
+            style="display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); font-size: 3rem; color: var(--color-text-muted);">
+            <i class="fa-solid fa-image"></i>
+        </div>
+        {% endif %}
+
+        <div class="card-body" style="flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                <span class="badge {{ item.status.lower() }}">{{ item.status }}</span>
+                <span
+                    style="font-size: 0.85rem; color: var(--color-text-muted); display: flex; align-items: center; gap: 0.3rem;">
+                    <i class="fa-regular fa-calendar"></i> {{ item.date.strftime('%Y-%m-%d') }}
+                </span>
+            </div>
+
+            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">{{ item.title }}</h3>
+            <p
+                style="color: var(--color-text-muted); margin-bottom: 1rem; font-size: 0.9rem; display: flex; align-items: center; gap: 0.4rem;">
+                <i class="fa-solid fa-location-dot"></i> {{ item.location }}
+            </p>
+            <p style="margin-bottom: 1.5rem; flex-grow: 1; line-height: 1.6;">{{ item.description[:100] }}{% if
+                item.description|length
+                > 100 %}...{% endif %}</p>
+
+            <div style="margin-top: auto;">
+                {% if item.security_question %}
+                <!-- Smart Claim Protection UI -->
+                <div id="claim-section-{{ item._id }}">
+                    <button onclick="showClaimForm('{{ item._id }}')" class="btn btn-primary" style="width: 100%;">
+                        <i class="fa-solid fa-shield-halved"></i> Claim This Item
+                    </button>
+                </div>
+
+                <div id="claim-form-{{ item._id }}" style="display: none; margin-top: 1rem;">
+                    <p style="font-weight: bold; color: var(--color-text-main); margin-bottom: 0.5rem;">
+                        Security Question:
+                    </p>
+                    <p style="margin-bottom: 0.5rem; font-style: italic;">"{{ item.security_question }}"</p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="answer-{{ item._id }}" placeholder="Your Answer"
+                            style="flex: 1; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                        <button onclick="verifyClaim('{{ item._id }}')" class="btn btn-primary"
+                            style="padding: 0.5rem 1rem;">
+                            Verify
+                        </button>
+                    </div>
+                    <p id="error-{{ item._id }}"
+                        style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; display: none;"></p>
+                </div>
+
+                <div id="contact-info-{{ item._id }}" class="contact-info-box" style="display: none;">
+                    <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 0.2rem;">
+                        Contact:</p>
+                    <p id="contact-text-{{ item._id }}"></p>
+                </div>
+                {% else %}
+                <!-- Standard View -->
+                <details>
+                    <summary class="btn btn-outline"
+                        style="width: 100%; text-align: center; cursor: pointer; list-style: none;">
+                        View Contact Info
+                    </summary>
+                    <div class="contact-info-box">
+                        <p style="color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 0.2rem;">
+                            Contact:</p>
+                        <p>{{ item.contact_info }}</p>
+                    </div>
+                </details>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endmacro %}
+
+    {% set found_items = items | selectattr('status', 'equalto', 'Found') | list %}
+    {% set lost_items = items | selectattr('status', 'equalto', 'Lost') | list %}
+
+    {% if items %}
+    {% if found_items %}
+    <h2
+        style="margin-top: 2rem; margin-bottom: 1rem; color: var(--color-primary); display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-check-circle"></i> Found Items
+    </h2>
+    <div class="card-grid">
+        {% for item in found_items %}
+        {{ render_item_card(item) }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if lost_items %}
+    <h2 style="margin-top: 3rem; margin-bottom: 1rem; color: #ef4444; display: flex; align-items: center; gap: 0.5rem;">
+        <i class="fa-solid fa-circle-exclamation"></i> Lost Items
+    </h2>
+    <div class="card-grid">
+        {% for item in lost_items %}
+        {{ render_item_card(item) }}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div style="text-align: center; padding: 6rem 2rem; color: var(--color-text-muted);">
+        <i class="fa-solid fa-ghost" style="font-size: 4rem; margin-bottom: 1.5rem; color: var(--card-border);"></i>
+        <h2 style="font-size: 2rem; margin-bottom: 1rem; color: var(--color-text-main);">No items found</h2>
+        <p>Try adjusting your search filters or check back later.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    // Retain select values
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('category')) document.getElementById('category').value = urlParams.get('category');
+    if (urlParams.get('status')) document.getElementById('status').value = urlParams.get('status');
+
+    function showClaimForm(itemId) {
+        document.getElementById('claim-section-' + itemId).style.display = 'none';
+        document.getElementById('claim-form-' + itemId).style.display = 'block';
+    }
+
+    async function verifyClaim(itemId) {
+        const answerInput = document.getElementById('answer-' + itemId);
+        const errorMsg = document.getElementById('error-' + itemId);
+        const answer = answerInput.value;
+
+        if (!answer) {
+            errorMsg.textContent = "Please enter an answer.";
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        try {
+            const response = await fetch('/verify_claim', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ item_id: itemId, answer: answer })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Hide form, show contact info
+                document.getElementById('claim-form-' + itemId).style.display = 'none';
+                const contactBox = document.getElementById('contact-info-' + itemId);
+                document.getElementById('contact-text-' + itemId).textContent = data.contact_info;
+                contactBox.style.display = 'block';
+                contactBox.style.backgroundColor = '#ecfdf5'; // Success green background
+                contactBox.style.borderColor = '#6ee7b7';
+            } else {
+                errorMsg.textContent = data.message;
+                errorMsg.style.display = 'block';
+                answerInput.style.borderColor = '#ef4444';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            errorMsg.textContent = "An error occurred. Please try again.";
+            errorMsg.style.display = 'block';
+        }
+    }
+</script>
+{% endblock %}
